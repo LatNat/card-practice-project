@@ -1,7 +1,7 @@
 import os
 
 
-basedir = os.path.abspath(os.path.diranem(__file__))
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 class Config(object):

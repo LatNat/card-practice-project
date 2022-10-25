@@ -7,14 +7,31 @@ app.config.from_object("project.config.Config")
 db = SQLAlchemy(app)
 
 
+value_associations = db.Table(
+   "value_associations",
+   db.Model.metadata,
+   db.Column("deck_type_id", db.ForeignKey("deck_types.id"), primary_key=True),
+   db.Column("value_id", db.ForeignKey("values.id"), primary_key=True),
+)
+
+
+suit_associations = db.Table(
+   "suit_associations",
+   db.Model.metadata,
+   db.Column("deck_type_id", db.ForeignKey("deck_types.id"), primary_key=True),
+   db.Column("suit_id", db.ForeignKey("suits.id"), primary_key=True),
+)
+
+
 class Type(db.Model):
     __tablename__ = "deck_types"
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True, nullable=False)
-    used_suits = db.relationship("Suit", back_populates="deck_type")
-    
-    
+    used_suits = db.relationship(
+    	"Suit", secondary=suit_associations, back_populates="deck_type")
+    used_values = db.relationship(
+    	"Value", secondary=value_associations, back_populates="deck_type")
 
 
 class Suit(db.Model):
@@ -22,17 +39,18 @@ class Suit(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), unique=True, nullable=False)
-    deck_type_id = db.Column(db.Integer, db.ForeignKey("deck_types.id"))
-    deck_type = db.relationship("Type", back_populates="used_suits")
+    deck_type = db.relationship(
+    	"Type", secondary=suit_associations, back_populates="used_suits")
 
 
-class Card(db.Model):
-    __tablename__ = "cards"
+class Value(db.Model):
+    __tablename__ = "values"
 
     id = db.Column(db.Integer, primary_key=True)
-    deck_type = db.Column(db.Integer, db.ForeignKey("deck_types.id"))
-    suit = db.Column(db.Integer, db.ForeignKey("suits.id"))
-    value = db.Column(db.Integer)
+    value = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
+    deck_type = db.relationship(
+    	"Type", secondary=value_associations, back_populates="used_values")
 
 
 @app.route("/")

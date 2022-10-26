@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends gcc
 RUN pip install --upgrade pip
 RUN pip install flake8==5.0.4
 COPY . /usr/src/app/
-RUN flake8 --ignore=E501,F401 --exclude=env/ .
+RUN flake8 --ignore E501,F401 --exclude env .
 
 # install python dependencies
 COPY ./requirements.txt .
@@ -31,7 +31,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 FROM python:3.10.7-slim-buster
 
 # create directory for the app user
-WORKDIR	mkdir -p /home/app
+RUN mkdir -p /home/app
 
 # create the app user
 RUN addgroup --system app && adduser --system --group app
@@ -42,7 +42,7 @@ ENV APP_HOME=/home/app/web
 RUN mkdir $APP_HOME
 WORKDIR $APP_HOME
 
-# install dependencies using builder image (builder alias)
+# install dependencies using builder image (alias)
 RUN apt-get update && apt-get install -y --no-install-recommends netcat
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .

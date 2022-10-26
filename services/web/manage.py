@@ -15,23 +15,27 @@ def create_db():
 
 @cli.command("seed_db")
 def seed_db():
-    standard_deck = Type(name="French")
+    standard_deck = Type(type_of_deck="French")
     create_all_suits_for_deck(standard_deck)
-    create_all_card_values_for_deck(standard_deck)
     db.session.add(standard_deck)
     db.session.commit()
 
 
 def create_all_suits_for_deck(deck):
     suit_names = ["Diamonds", "Hearts", "Spades", "Clubs"]
+    unique_card_values = create_all_card_values()
 
     for sn in suit_names:
-        current_suit = Suit(name=sn)
+        current_suit = Suit(suit=sn)
         deck.used_suits.append(current_suit)
         db.session.add(current_suit)
+        attach_values_to_suit(unique_card_values, current_suit)
+
+    db.session.add_all(unique_card_values)
 
 
-def create_all_card_values_for_deck(deck):
+def create_all_card_values():
+    card_values = []
     for card in range(1, 14):
         if card == 1:
             card_value = Value(value=11, name="Ace")
@@ -44,8 +48,15 @@ def create_all_card_values_for_deck(deck):
         elif card == 13:
             card_value = Value(value=10, name="King")
 
-        deck.used_values.append(card_value)
-        db.session.add(card_value)
+        # suit.available_values.append(card_value)
+        card_values.append(card_value)
+
+    return card_values
+
+def attach_values_to_suit(values, suit):
+    for value in values:
+        value.available_suits.append(suit)
+        suit.available_values.append(value)
 
 
 if __name__ == "__main__":

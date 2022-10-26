@@ -8,15 +8,15 @@ db = SQLAlchemy(app)
 
 
 value_associations = db.Table(
-    "value_associations",
+    "suit_to_value",
     db.Model.metadata,
-    db.Column("deck_type_id", db.ForeignKey("deck_types.id"), primary_key=True),
+    db.Column("suit_id", db.ForeignKey("suits.id"), primary_key=True),
     db.Column("value_id", db.ForeignKey("values.id"), primary_key=True),
 )
 
 
 suit_associations = db.Table(
-    "suit_associations",
+    "deck_to_suit",
     db.Model.metadata,
     db.Column("deck_type_id", db.ForeignKey("deck_types.id"), primary_key=True),
     db.Column("suit_id", db.ForeignKey("suits.id"), primary_key=True),
@@ -27,17 +27,17 @@ class Type(db.Model):
     __tablename__ = "deck_types"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True, nullable=False)
+    type_of_deck = db.Column(db.String(128), unique=True, nullable=False)
     used_suits = db.relationship("Suit", secondary=suit_associations, back_populates="deck_type")
-    used_values = db.relationship("Value", secondary=value_associations, back_populates="deck_type")
 
 
 class Suit(db.Model):
     __tablename__ = "suits"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(128), unique=True, nullable=False)
+    suit = db.Column(db.String(128), unique=True, nullable=False)
     deck_type = db.relationship("Type", secondary=suit_associations, back_populates="used_suits")
+    available_values = db.relationship("Value", secondary=value_associations, back_populates="available_suits")
 
 
 class Value(db.Model):
@@ -46,7 +46,7 @@ class Value(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     value = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(128), nullable=False)
-    deck_type = db.relationship("Type", secondary=value_associations, back_populates="used_values")
+    available_suits = db.relationship("Suit", secondary=value_associations, back_populates="")
 
 
 @app.route("/")
